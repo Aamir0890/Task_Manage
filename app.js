@@ -1,18 +1,23 @@
-const express=require('express')
+const express = require('express')
 
-const app=express();
+const app = express();
 
-const PORT=8000;
-const db=require('./models')
+const PORT = 8000;
+
+const db = require('./models')
+
+const userRoutes=require('./routes/v1/index')
 
 app.use(express.json());
 
 
-db.Sequelize.sync().then(()=>{
+app.use('/api',userRoutes);
+
+db.sequelize.sync().then(() => {
     console.log("database connected")
-    app.listen(PORT,()=>{
+    app.listen(PORT, () => {
         console.log("App is listening in port 3000");
     })
-}).catch((err)=>{
-   console.log("unable to connect to database",err)
+}).catch((err) => {
+    console.log("unable to connect to database", err)
 })
