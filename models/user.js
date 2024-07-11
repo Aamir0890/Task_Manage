@@ -23,6 +23,8 @@ module.exports=(sequelize,DataTypes)=>{
     })
     User.associate = (models) => {
         User.hasMany(models.Task, { foreignKey: 'userId' });
+        User.hasMany(models.Comment, { foreignKey: 'userId' });
+        User.hasMany(models.Attachment, { foreignKey: 'userId' });
     };
     
     return User

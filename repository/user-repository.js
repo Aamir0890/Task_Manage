@@ -1,7 +1,7 @@
 const {models:{User}}=require('../models')
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const bcrypt=require('bcrypt')
+const bcrypt=require('bcrypt');
 
 
 exports.createUser=async(userData)=>{
@@ -50,4 +50,9 @@ exports.deleteUser = async (id) => {
   throw new Error('User not found');
 };
 
+exports.getUserByEmail=async(email)=>{
+ 
+  const user= await User.findOne({ where: { email } });
+return user
+}
 

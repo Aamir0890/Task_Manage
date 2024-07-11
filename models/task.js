@@ -35,6 +35,8 @@ module.exports = (sequelize, DataTypes) => {
 
     Task.associate = (models) => {
         Task.belongsTo(models.User, { foreignKey: 'userId' });
+        Task.hasMany(models.Comment, { foreignKey: 'taskId' });
+        Task.hasMany(models.Attachment, { foreignKey: 'taskId' });
     };
 
     return Task;

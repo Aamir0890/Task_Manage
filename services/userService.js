@@ -7,6 +7,7 @@ exports.createUser=async(data)=>{
     data.password=hashedPassword
     return await userRepository.createUser(data)
 }
+
 exports.loginUser=async(email,password)=>{
     
     return await userRepository.authenticate(email,password)
