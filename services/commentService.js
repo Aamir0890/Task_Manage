@@ -5,20 +5,31 @@ exports.createCommnet=async(data)=>{
     const task=data.taskId;
     const id=data.userId;
     const user=await taskRepository.getTaskById(task)
-    if(user.dataValues.userId!=id){
+    if(user.assignedTo!=id){
         throw new Error("User not able to create comment as task not assigned")
     }
     await commentRepository.createComment(data)
 }
+
 exports.getAllCommnet=async(taskId)=>{
+     
+    const data=await commentRepository.getAllComment(taskId)
     
-    await commentRepository.getAllComment(taskId)
+    return data
 }
 
-exports.deleteComment=async(id,userId)=>{
-    const user=await commentRepository.getTaskById(id)
-   if(user.dataValues.userId!=userId){
-    throw new Error("User not allowed as delete commnet")
-   }
-    await commentRepository.deleteCommnet(id)
-}
+exports.deleteComment = async (commentId, userId) => {
+   
+    const comment = await commentRepository.findComment(commentId);
+    
+    if (!comment) {
+        return { success: false, message: 'Comment not found' };
+    }
+
+    if (comment.userId !== userId) {
+        return { success: false, message: 'You do not have permission to delete this comment' };
+    }
+
+    await commentRepository.deleteComment(comment);
+    return { success: true, message: 'Comment deleted successfully' };
+};

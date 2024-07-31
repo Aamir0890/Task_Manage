@@ -1,23 +1,20 @@
-const { where } = require('sequelize')
+
 const {models:{Attachment}}=require('../models')
 
-exports.createAttachment=async(data)=>{
-    return Attachment.create(data)
-}
-exports.deleteAttachment=async(id)=>{
-    const attachment=await Attachment.findByPk(id)
-    if(attachment){
-        await attachment.destroy
-        return attachment
-    }
-    throw new Error('attachment not found');
+
+exports.createAttachment = async (data) => {
+    return await Attachment.create(data);
+};
+
+exports.findAttachment = async (attachmentId) => {
+    return await Attachment.findByPk(attachmentId);
+};
+
+exports.findAllAttachment=async(id)=>{
+    return await Attachment.findAll({where:{taskId:id}})
 }
 
-exports.getAllAttachment=async(id)=>{
-             return await Attachment.findAll({
-        where:{
-            taskId:id
-        }
-    })
-
-}
+exports.deleteAttachment = async (attachment) => {
+    await attachment.destroy(attachment);
+    return true;
+};

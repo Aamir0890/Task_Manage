@@ -1,91 +1,101 @@
-const taskService=require('../services/taskService')
-const {taskSchema,updateStatusSchema}=require('../utils/validations/taskSchema')
+const taskService = require('../services/taskService');
+const { taskSchema, updateStatusSchema } = require('../utils/validations/taskSchema');
+const ErrorHandler=require('../utils/errors/errorHandler')
 
-
-exports.createTask=async(req,res)=>{
+exports.createTask = async (req, res) => {
     const validation = taskSchema.safeParse(req.body);
-     
+    
     if (!validation.success) {
-        return res.status(400).json({ errors: validation.error.errors });
+        return ErrorHandler.validationError(res, validation.error.errors);
     }
-    const data=req.body;
-    data.status=req.body.status||'incomplete'
-    data.userId= req.user.id
-    try {
-        const task=await taskService.createTask(data)
-        res.status(201).json({ message: 'Task created successfully', task });
-
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
-
-}
-   
-exports.getAllTask=async(req,res)=>{
+    
+    const data = {
+        ...validation.data,
+        status: validation.data.status || 'incomplete',
+        assignedTo: req.user.id, 
+        projectId: req.body.projectId 
+    };
     
     try {
-        const task=await taskService.getAllTask(req.user.id);
-        return res.status(200).json(task)
+        const task = await taskService.createTask(data);
+        res.status(201).json({ success: true, message: 'Task created successfully', task });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        console.error('Error creating task:', error);
+        return ErrorHandler.internalServerError(res);
     }
-}
+};
 
-exports.updateTask=async(req,res)=>{
+exports.getAllTask = async (req, res) => {
+    try {
+        const tasks = await taskService.getAllTask(req.user.id);
+        res.status(200).json({ success: true, tasks });
+    } catch (error) {
+        console.error('Error fetching tasks:', error);
+        return ErrorHandler.internalServerError(res);
+    }
+};
+
+exports.updateTask = async (req, res) => {
     const { id } = req.params;
-    const { status } = req.body;
     const validation = updateStatusSchema.safeParse(req.body);
 
     if (!validation.success) {
-        res.status(400).json({ errors: validation.error.errors });
+        return ErrorHandler.validationError(res, validation.error.errors);
     }
      
     try {
-        const task = await taskService.changeTaskStatus(id, req.user.id, status);
-        res.status(200).json({ message: 'Task status updated successfully', task });
+        const task = await taskService.changeTaskStatus(id, req.user.id, validation.data.status);
+        res.status(200).json({ success: true, message: 'Task status updated successfully', task });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        console.error('Error updating task status:', error);
+        return ErrorHandler.badRequest(res, error.message);
     }
-}
+};
 
-exports.filterTask=async(req,res)=>{
-    const status={status:req.query.status}
+exports.filterTask = async (req, res) => {
+    const validation = updateStatusSchema.safeParse({ status: req.query.status });
     
-    const validation = updateStatusSchema.safeParse(status);
     if (!validation.success) {
-        res.status(400).json({ errors: validation.error.errors });
+        return ErrorHandler.validationError(res, validation.error.errors);
     }
      
     try {
-        const task=await taskService.filterTask(req.user.id,status)
-        res.status(200).json(task)
+        const tasks = await taskService.filterTask(req.user.id, validation.data);
+        res.status(200).json({ success: true, tasks });
     } catch (error) {
-        res.status(400).json("Error found")
+        console.error('Error filtering tasks:', error);
+        return ErrorHandler.internalServerError(res);
     }
-     
-}
+};
 
-exports.searchTask=async(req,res)=>{
-    const q=req.query.q;
+exports.searchTask = async (req, res) => {
+    const q = req.query.q;
     
-    try {
-        const task=await taskService.searchTask(req.user.id,q);
-        res.status(200).json(task)
-    } catch (error) {
-        res.status(400).json("Error found")
+    if (!q) {
+        return ErrorHandler.badRequest(res, 'Search query is required');
     }
-}
 
-exports.transferTask=async(req,res)=>{
-    const {email,taskId}=req.body
+    try {
+        const tasks = await taskService.searchTask(req.user.id, q);
+        res.status(200).json({ success: true, tasks });
+    } catch (error) {
+        console.error('Error searching tasks:', error);
+        return ErrorHandler.internalServerError(res);
+    }
+};
+
+exports.transferTask = async (req, res) => {
+    const { email, taskId } = req.body;
      
-       try {
-        
-        const task=await taskService.transferTask(req.user.id,email,taskId);
-        res.status(200).json(task);
+    if (!email || !taskId) {
+        return ErrorHandler.badRequest(res, 'Email and taskId are required');
+    }
 
-       } catch (error) {
-        console.log(error)
-         res.status(400).json(error)
-       }
-}
+    try {
+        const task = await taskService.transferTask(req.user.id, email, taskId);
+        res.status(200).json({ success: true, message: 'Task transferred successfully', task });
+    } catch (error) {
+        console.error('Error transferring task:', error);
+        return ErrorHandler.badRequest(res, error.message);
+    }
+};

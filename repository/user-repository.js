@@ -2,6 +2,7 @@ const {models:{User}}=require('../models')
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const bcrypt=require('bcrypt');
+const { Op } = require('sequelize');
 
 
 exports.createUser=async(userData)=>{
@@ -56,3 +57,12 @@ exports.getUserByEmail=async(email)=>{
 return user
 }
 
+exports.findUsersByEmails = async (emails) => {
+  return User.findAll({
+      where: {
+          email: {
+              [Op.in]: emails
+          }
+      }
+  });
+};

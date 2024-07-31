@@ -4,22 +4,16 @@ exports.createComment=async(data)=>{
      return await Comment.create(data)
 }
 
-exports.deleteCommnet=async(id)=>{
-    const comment = await Comment.findByPk(id);
-    if (comment) {
-      await comment.destroy();
-      return comment;
-    }
-    throw new Error('Commnet not found');
-}
+
+exports.findComment = async (commentId) => {
+    return await Comment.findByPk(commentId);
+};
 
 exports.getAllComment=async(id)=>{
-    return await Comment.findAll(
-        {
-            where:{
-                taskId:id
-            }
-        }
-    )
+    return await Comment.findAll({where:{taskId:id}})
+    
 }
-
+exports.deleteComment = async (comment) => {
+    await comment.destroy();
+    return true;
+};
