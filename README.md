@@ -10,6 +10,10 @@ This API provides functionality for managing projects, teams, tasks, comments, a
 4. Comment System
 5. Attachment Handling
 
+
+#### Environment Variables
+- To run this project, you will need to add the following environment variables to your .env file in the root of the project.
+
 ## API Endpoints
 
 ### User Management
@@ -53,6 +57,7 @@ This API provides functionality for managing projects, teams, tasks, comments, a
 
 #### Create Team
 - **POST** `/team/register`
+- Requires authentication
 - Request body:
   ```json
   {
@@ -62,6 +67,7 @@ This API provides functionality for managing projects, teams, tasks, comments, a
  
 #### Invite to Team
 - **POST** `/team/invite`
+- Requires authentication
 - Request body:
   ```json
   {
@@ -73,7 +79,7 @@ This API provides functionality for managing projects, teams, tasks, comments, a
 #### Get Team Members
 - **GET** `/team/:id`
 - Retrieves all members of a specific team
-
+- Requires authentication
 
 ### Project Management
 
@@ -145,13 +151,18 @@ This API provides functionality for managing projects, teams, tasks, comments, a
 - Transfers a task to another user of the team thee task is assinged to
 - Requires authentication
 - Request body:
-     jsonCopy{
+    jsonCopy{
   "email": "string",
   "taskId": integer
-       }
+  }
 
 - Response: Returns the updated task object
 - Status: 200 OK
+- Notes:
+
+- The task can only be transferred to a user who belongs to the same team as the current assignee.
+- The project associated with the task must belong to the team of both users.
+- If these conditions are not met, the transfer will fail with an appropriate error message.
 
 ### Comment System
 
@@ -162,11 +173,24 @@ This API provides functionality for managing projects, teams, tasks, comments, a
 #### Create Comment
 - **POST** `/comment`
 - Adds a new comment
+- Requires authentication
+- Request body:
+  ```json
+  {
+    "content": "string",
+    "taskId":"integer"
+  }
 
 #### Delete Comment
 - **DELETE** `/comment`
 - Deletes a specific comment
-
+- Requires authentication
+- Request body:
+  ```json
+  {
+    "id": "commentId"
+   
+  }
 
 ### Attachment Handling
 
@@ -177,10 +201,24 @@ This API provides functionality for managing projects, teams, tasks, comments, a
 #### Create Attachment
 - **POST** `/attachment`
 - Adds a new attachment
+- Requires authentication
+- Request body:
+  ```json
+  {
+    "filePath":"string",
+    "taskId": "integer"
+  }
 
 #### Delete Attachment
 - **DELETE** `/attachment`
 - Deletes a specific attachment
+- Requires authentication
+- Request body:
+  ```json
+  {
+    "id": "attachmentId"
+   
+  }
 
 ## Authentication
 
@@ -206,3 +244,4 @@ The API uses appropriate HTTP status codes for different scenarios:
 - 500 Internal Server Error: Server-side error
 
 For detailed error messages, check the response body.
+
